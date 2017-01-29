@@ -14,42 +14,52 @@ provider calls) with the provider. Then get their two endpoints, authorize URL
 and token URL. Then:
 
 ```
+import (
+    "fmt"
+    "net/http"
+
+    "github.com/edpin/https"
+    "github.com/edpin/oauth"
+)
+
 const (
     oauthBase    = "https://oauth.example.com/"
     clientID     = "..."
     clientSecret = "..."
 )
 
-auth = oauth.New(clientID, clientSecret, oauthBase+"oauth/authorize", oauthBase+"oauth/accesstoken")
+func main() {
+   auth = oauth.New(clientID, clientSecret, oauthBase+"oauth/authorize", oauthBase+"oauth/accesstoken")
 
-mux := http.NewServeMux()
-mux.Handle("/auth/callback", auth)
-mux.HanldeFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-	const loginForm = `
+   mux := http.NewServeMux()
+   mux.Handle("/auth/callback", auth)
+   mux.HanldeFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+	    const loginForm = `
 <html>
 <body>
 <a href="%s">Login</a>
 </body>
 </html>
 `
-	user := oauth.UserName(r.RemoteAddr)  // Or pick a better UserName.
-	url, err := auth.AuthorizeURL(user, []string{"read"}, "/logged")
-	if err != nil {
-	    w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(fmt.Sprintf("Something went wrong: %s", err)))
-		return
-	}
-	w.Write([]byte(fmt.Sprintf(loginForm, url)))
+    	user := oauth.UserName(r.RemoteAddr)  // Or pick a better UserName.
+    	url, err := auth.AuthorizeURL(user, []string{"read"}, "/logged")
+    	if err != nil {
+	        w.WriteHeader(http.StatusInternalServerError)
+		    w.Write([]byte(fmt.Sprintf("Something went wrong: %s", err)))
+		    return
+	    }
+	    w.Write([]byte(fmt.Sprintf(loginForm, url)))
 })
 
-// Consume all login notifications.
-go func(notifications chan *oauth.User) {
-    for {
-        user <- notifications
-        log.Printf("User %s authorized.", user.UserName)
-    }
-}(auth.Login)
+    // Consume all login notifications.
+    go func(notifications chan *oauth.User) {
+        for {
+            user := <- notifications
+            log.Printf("User %s authorized.", user.UserName)
+        }
+    }(auth.Login)
 
-// Start your server or use github.com/edpin/https:
-https.StartSecureServer(mux, nil)
+    // Start your server or use github.com/edpin/https:
+    https.StartSecureServer(mux, nil)
+}
 ```
