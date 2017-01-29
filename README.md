@@ -42,6 +42,14 @@ mux.HanldeFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fmt.Sprintf(loginForm, url)))
 })
 
+// Consume all login notifications.
+go func(notifications chan *oauth.User) {
+    for {
+        user <- notifications
+        log.Printf("User %s authorized.", user.UserName)
+    }
+}(auth.Login)
+
 // Start your server or use github.com/edpin/https:
 https.StartSecureServer(mux, nil)
 ```
