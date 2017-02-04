@@ -29,7 +29,7 @@ const (
 )
 
 func main() {
-   auth = oauth.New(clientID, clientSecret, oauthBase+"oauth/authorize", oauthBase+"oauth/accesstoken")
+   auth = oauth.New(clientID, clientSecret, oauthBase+"oauth/authorize", oauthBase+"oauth/accesstoken", oauthBase+"oauth/refreshtoken")
 
    mux := http.NewServeMux()
    mux.Handle("/auth/callback", auth)
@@ -63,3 +63,11 @@ func main() {
     https.StartSecureServer(mux, nil)
 }
 ```
+
+To deal with refreshes, if your provided returned a RefreshToken for your users,
+simply call `user.RefreshAccessTokenIfNeeded()` before each time you need an
+access token for that user.
+
+TODOs:
+
+1. Use a small pool of HTTPS clients instead of creating a new one every time.
