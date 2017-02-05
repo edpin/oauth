@@ -147,6 +147,24 @@ func (o *OAuth) User(u UserName) (*User, error) {
 	return nil, ErrNotFound
 }
 
+// Load loads a user. If the user is already known, all fields are updated with
+// the new contents, otherwise it's inserted. No effort is made in validating
+// the fields, except for UserName, which must not be empty. Upon successful
+// return, load reports whether the new field was updated (true) or newly
+// inserted (false).
+func (o *OAuth) Load(u *User) (bool, error) {
+	const op = "oauth.Load"
+	o.mu.Lock()
+	defer o.mu.Unlock()
+
+	if u.UserName == "" {
+		return false, fmt.Errorf("%s: invalid username: %s", op, u.UserName)
+	}
+	_, found := o.users[u.UserName]
+	o.users[u.UserName] = u
+	return found, nil
+}
+
 // RefreshAccessTokenIfNeeded refreshes the access token if the user has a
 // refresh token and the access token is close to expiring. This may do a
 // network request. Upon successful return, a call to User is guaranteed to
