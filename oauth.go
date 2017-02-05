@@ -104,9 +104,10 @@ func (o *OAuth) RegisterCallbackHandler(pattern string, httpServer *http.ServeMu
 }
 
 // AuthorizeURL returns a URL that can be rendered for users to authenticate
-// themselves and obtain authorization for the scopes listed. An opaque user name or ID is given so this server can associate
-// the user with the authorized key. Once authorized, the user is redirected to
-// the nextURL (if it's empty, the user will see a debug message).
+// themselves and obtain authorization for the scopes listed. An opaque user
+// name or ID is given so this server can associate the user with the authorized
+// key. Once authorized, the user is redirected to the nextURL (if it's empty,
+// the user will see a debug message).
 func (o *OAuth) AuthorizeURL(u UserName, scopes []string, nextURL string) (*url.URL, error) {
 	const op = "oauth.AuthorizeURL"
 
