@@ -43,6 +43,11 @@ type User struct {
 
 // OAuth is an HTTP.Handler that handles the OAuth dance.
 type OAuth struct {
+	// ProviderName is the name of the OAuth provider. It's set at creation
+	// time and its purpose is purely to identify the provider, without
+	// having to inspect the URL endpoints. It is not used internally.
+	ProviderName string
+
 	// Login is a buffered channel that receives notifications when new auth
 	// requests succeed. If the buffer fills up, further notifications are
 	// dropped until the channel has buffer space again.
@@ -64,12 +69,13 @@ var ErrNotFound = errors.New("Username not found")
 
 type authState string
 
-// New creates an OAuth client with a clientID and clientSecret as given. The
-// endpoint for retrieving an authorization code is given by the authorizeURL.
-// The endpoint for retrieving an access token is given by the tokenURL. Both
-// endpoints must be fully specified (i.e. the full URL starting with
-// "https://").
-func New(clientID, clientSecret, authorizeURL, tokenURL, refreshURL string) *OAuth {
+// New creates an OAuth client for a providerName with a clientID and
+// clientSecret as given. The endpoint for retrieving an authorization code is
+// given by the authorizeURL. The endpoint for retrieving an access token is
+// given by the tokenURL. The endpoint for refreshing access tokens is given by
+// refreshURL, which is optional. All provided endpoints must be fully specified
+// (i.e. the full URL starting with "https://"). The provider name is optional.
+func New(providerName, clientID, clientSecret, authorizeURL, tokenURL, refreshURL string) *OAuth {
 	return &OAuth{
 		Login: make(chan *User, 100),
 		errTpl: template.Must(template.New("errTpl").Parse(`
@@ -80,6 +86,7 @@ func New(clientID, clientSecret, authorizeURL, tokenURL, refreshURL string) *OAu
 			</body>
 			</html>
 		`)),
+		ProviderName: providerName,
 		clientID:     clientID,
 		clientSecret: clientSecret,
 		authorizeURL: authorizeURL,

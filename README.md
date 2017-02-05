@@ -24,12 +24,15 @@ import (
 
 const (
     oauthBase    = "https://oauth.example.com/"
+    providerName = "Some OAuth Provider"
     clientID     = "..."
     clientSecret = "..."
 )
 
 func main() {
-   auth = oauth.New(clientID, clientSecret, oauthBase+"oauth/authorize", oauthBase+"oauth/accesstoken", oauthBase+"oauth/refreshtoken")
+   auth = oauth.New(providerName, clientID, clientSecret,
+                    oauthBase+"oauth/authorize", oauthBase+"oauth/accesstoken",
+                    oauthBase+"oauth/refreshtoken")
 
    mux := http.NewServeMux()
    mux.Handle("/auth/callback", auth)
